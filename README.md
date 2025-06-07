@@ -100,9 +100,22 @@ Tools in MCP Excel Server are registered using the `@mcp_tool` decorator. This d
    git clone <repo-url>
    cd mcp_excel_server
    ```
+
 2. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
+   ```
+
+3. **Set up environment variables:**
+   - Copy the `.env.sample` file to `.env`:
+     ```bash
+     cp .env.sample .env
+     ```
+   - Modify the `.env` file to change any environment variables as needed.
+
+4. **Start the MCP Excel Server:**
+   ```bash
+   PYTHONPATH=src python src/mcp_excel_server/__main__.py sse
    ```
 
 ### Integration with AI Agents
