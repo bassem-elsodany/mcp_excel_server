@@ -1,181 +1,106 @@
-# MCP Excel Server
+# Excel MCP Server
 
-## Table of Contents
+This project provides a set of tools for interacting with Excel workbooks and worksheets using the MCP (Message Control Protocol) server framework.
 
-1. [What is MCP?](#what-is-mcp)
-    - [MCP Server](#mcp-server)
-    - [MCP Client](#mcp-client)
-    - [MCP Tools](#mcp-tools)
-2. [About MCP Excel Server](#about-mcp-excel-server)
-3. [Available Tools](#available-tools)
-    - [Workbook Tools](#workbook-tools)
-    - [Worksheet Tools](#worksheet-tools)
-    - [Range Tools](#range-tools)
-    - [Excel Data Tools](#excel-data-tools)
-4. [How to Use the Tools](#how-to-use-the-tools)
-    - [Installation](#installation)
-    - [Integration with AI Agents](#integration-with-ai-agents)
-    - [Configuration for AI Agents](#configuration-for-ai-agents)
-5. [MCP Inspector](#mcp-inspector)
-6. [Contributing](#contributing)
-7. [License](#license)
+## Overview
 
----
+The Excel MCP Server allows you to perform various operations on Excel files, such as creating workbooks, managing worksheets, reading and writing data, and more. It is designed to be used as a part of a larger system that requires Excel file manipulation.
 
-## What is MCP?
+## Features
 
-**MCP** stands for **Model Context Protocol**. It is an open protocol that standardizes how applications provide context to Large Language Models (LLMs). Think of MCP like a USB-C port for AI applications—it provides a standardized way to connect AI models to different data sources and tools.
+- **Workbook Management**: Create, list, read, and write data to Excel workbooks.
+- **Worksheet Management**: Create, delete, rename, copy, and move worksheets within a workbook.
+- **Data Operations**: Read and write data to specific ranges in worksheets.
 
-MCP helps you build agents and complex workflows on top of LLMs by:
-- Providing a growing list of pre-built integrations that your LLM can directly plug into
-- Offering flexibility to switch between LLM providers and vendors
-- Implementing best practices for securing your data within your infrastructure
+## Installation
 
-### MCP Server
-The **MCP Server** is a lightweight program that exposes specific capabilities through the standardized Model Context Protocol. It securely accesses local data sources (like your computer's files and databases) and remote services (available over the internet) to provide context to LLMs.
-
-### MCP Client
-The **MCP Client** is a protocol client that maintains a 1:1 connection with an MCP Server. It allows applications (like Claude Desktop, IDEs, or AI tools) to access data and tools provided by the server.
-
-### MCP Tools
-**MCP Tools** are specific capabilities exposed by MCP Servers. These tools enable LLMs to perform actions (e.g., creating a workbook, merging cells) and access data through a standardized interface.
-
----
-
-## About MCP Excel Server
-
-![MCP Excel Server](imgs/mcp_excel_server.jpg)
-
-**MCP Excel Server** is an implementation of the MCP Server that provides tools for automating Excel file operations using Python and [openpyxl](https://openpyxl.readthedocs.io/). It allows you to:
-- Create, open, and save Excel workbooks
-- Add, rename, copy, move, and delete worksheets
-- Read and write data to cells and ranges
-- Merge, unmerge, copy, move, and delete cell ranges
-- List available Excel files
-
----
-
-## Available Tools
-
-### Workbook Tools
-- **[create_workbook](src/mcp_excel_server/tools/workbook_tools.py)**: Create a new Excel workbook
-- **[get_workbook_info](src/mcp_excel_server/tools/workbook_tools.py)**: Get information about a workbook (sheets, properties)
-
-### Worksheet Tools
-- **[create_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Add a new worksheet
-- **[delete_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Remove a worksheet
-- **[rename_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Rename a worksheet
-- **[copy_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Duplicate a worksheet
-- **[move_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Change worksheet order
-- **[get_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Get worksheet details
-- **[list_worksheets](src/mcp_excel_server/tools/worksheet_tools.py)**: List all worksheets in a workbook
-
-### Range Tools
-- **[merge_range](src/mcp_excel_server/tools/range_tools.py)**: Merge a range of cells
-- **[unmerge_range](src/mcp_excel_server/tools/range_tools.py)**: Unmerge a range of cells
-- **[copy_range](src/mcp_excel_server/tools/range_tools.py)**: Copy a range of cells
-- **[move_range](src/mcp_excel_server/tools/range_tools.py)**: Move a range of cells
-- **[delete_range](src/mcp_excel_server/tools/range_tools.py)**: Delete a range of cells
-- **[validate_range](src/mcp_excel_server/tools/range_tools.py)**: Validate a cell range
-
-### Excel Data Tools
-- **[read_data_from_excel](src/mcp_excel_server/tools/excel_data_tools.py)**: Read data from a worksheet
-- **[write_data_to_excel](src/mcp_excel_server/tools/excel_data_tools.py)**: Write data to a worksheet
-- **[merge_cells](src/mcp_excel_server/tools/excel_data_tools.py)**: Merge cells (alias)
-- **[unmerge_cells](src/mcp_excel_server/tools/excel_data_tools.py)**: Unmerge cells (alias)
-- **[list_excel_files](src/mcp_excel_server/tools/excel_data_tools.py)**: List all Excel files in the workspace
-
-### Registering Tools
-
-Tools in MCP Excel Server are registered using the `@mcp_tool` decorator. This decorator provides metadata about the tool, such as its name, description, and parameters. When the server starts, it automatically registers all tools, making them available for use by AI Agents.
-
----
-
-## How to Use the Tools
-
-### Installation
-
-1. **Clone the repository:**
+1. Clone the repository:
    ```bash
-   git clone <repo-url>
+   git clone <repository-url>
    cd mcp_excel_server
    ```
 
-2. **Install dependencies:**
+2. Install the required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Set up environment variables:**
-   - Copy the `.env.sample` file to `.env`:
-     ```bash
-     cp .env.sample .env
-     ```
-   - Modify the `.env` file to change any environment variables as needed.
+## Usage
 
-4. **Start the MCP Excel Server:**
-   ```bash
-   PYTHONPATH=src python src/mcp_excel_server/__main__.py sse
-   ```
+### Workbook Tools
 
-### Integration with AI Agents
+- **Create Workbook**: Creates a new Excel workbook.
+  ```python
+  from mcp_excel_server.api.tools.workbook import create_workbook
+  result = create_workbook("my_workbook.xlsx")
+  ```
 
-MCP Excel Server is designed to be used with AI Agents like Claude, GitHub Copilot, and others. These agents can directly invoke the tools provided by the server without needing to send HTTP requests manually.
+- **List Workbooks**: Lists all available workbooks.
+  ```python
+  from mcp_excel_server.api.tools.workbook import list_workbooks
+  result = list_workbooks()
+  ```
 
-### Configuration for AI Agents
+- **Read Workbook Data**: Reads data from a specific range in a workbook.
+  ```python
+  from mcp_excel_server.api.tools.workbook import read_workbook_data
+  result = read_workbook_data("my_workbook.xlsx", "Sheet1", "A1", "B2")
+  ```
 
-To integrate MCP Excel Server with AI Agents, follow these steps:
+- **Write Workbook Data**: Writes data to a specific range in a workbook.
+  ```python
+  from mcp_excel_server.api.tools.workbook import write_workbook_data
+  data = [["New1", "New2"], ["New3", "New4"]]
+  result = write_workbook_data("my_workbook.xlsx", "Sheet1", data, "C1")
+  ```
 
-1. **Start the MCP Excel Server:**
-   ```bash
-   PYTHONPATH=src python src/mcp_excel_server/__main__.py sse
-   ```
+### Worksheet Tools
 
-2. **Configure your AI Agent:**
-   - For Claude Desktop, use the built-in MCP integration.
-   - For GitHub Copilot, ensure your environment is set up to recognize the MCP Server's capabilities.
+- **Create Worksheet**: Creates a new worksheet in an existing workbook.
+  ```python
+  from mcp_excel_server.api.tools.worksheet import create_worksheet
+  result = create_worksheet("my_workbook.xlsx", "NewSheet")
+  ```
 
-   **Configuration Examples:**
+- **Delete Worksheet**: Deletes a worksheet from a workbook.
+  ```python
+  from mcp_excel_server.api.tools.worksheet import delete_worksheet
+  result = delete_worksheet("my_workbook.xlsx", "Sheet1")
+  ```
 
-   **Stdio Transport Connection (for local integration):**
-   ```json
-   {
-      "mcpServers": {
-         "mcp-excel-stdio": {
-            "command": "uvx",
-            "args": ["mcp-excel-server", "stdio"]
-         }
-      }
-   }
-   ```
+- **Rename Worksheet**: Renames an existing worksheet.
+  ```python
+  from mcp_excel_server.api.tools.worksheet import rename_worksheet
+  result = rename_worksheet("my_workbook.xlsx", "Sheet1", "NewName")
+  ```
 
-   **SSE Transport Connection:**
-   ```json
-   {
-      "mcpServers": {
-         "mcp-excel-server": {
-            "url": "http://localhost:8800/sse"
-         }
-      }
-   }
-   ```
----
+- **Copy Worksheet**: Copies an existing worksheet to a new one.
+  ```python
+  from mcp_excel_server.api.tools.worksheet import copy_worksheet
+  result = copy_worksheet("my_workbook.xlsx", "Sheet1", "CopySheet")
+  ```
 
-## MCP Inspector
+- **Move Worksheet**: Moves a worksheet to a new position.
+  ```python
+  from mcp_excel_server.api.tools.worksheet import move_worksheet
+  result = move_worksheet("my_workbook.xlsx", "Sheet1", 1)
+  ```
 
-**MCP Inspector** The MCP Inspector is an interactive developer tool for testing and debugging MCP servers. While the Debugging Guide covers the Inspector as part of the overall debugging toolkit, this document provides a detailed exploration of the Inspector's features and capabilities
+## Configuration
 
+The server uses a configuration file to set various parameters, such as the directory where Excel files are stored. The default configuration is located in `src/mcp_excel_server/config/settings.py`.
 
-For more detailed information on using the MCP Inspector, refer to the [official documentation](https://modelcontextprotocol.io/docs/tools/inspector).
+## Testing
 
----
+To run the tests, use the following command:
+```bash
+python -m pytest
+```
 
 ## Contributing
 
-Contributions are welcome! Please open issues or pull requests for bug fixes, new features, or documentation improvements.
-
----
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License. 
+This project is licensed under the MIT License - see the LICENSE file for details. 
