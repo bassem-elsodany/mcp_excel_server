@@ -12,33 +12,28 @@ from mcp_excel_server.api.tools.worksheet import (
     rename_worksheet,
     move_worksheet,
     get_worksheet,
-    list_worksheets
+    list_worksheets,
+    merge_cells,
+    unmerge_cells
 )
 
 # Workbook management tools
 from mcp_excel_server.api.tools.workbook import (
-    create_workbook_tool as create_workbook,
-    get_workbook_info_tool as get_workbook_info
+    create_workbook,
+    list_workbooks,
+    read_workbook_data,
+    write_workbook_data
 )
 
 # Range management tools
 from mcp_excel_server.api.tools.range import (
-    delete_range_tool as delete_range,
-    copy_range_tool as copy_range,
-    move_range_tool as move_range,
-    merge_range_tool as merge_range,
-    unmerge_range_tool as unmerge_range,
-    validate_range_tool as validate_range
+    delete_range as delete_range,
+    copy_range as copy_range,
+    move_range as move_range,
+    merge_range as merge_range,
+    unmerge_range as unmerge_range,
+    validate_range as validate_range
 )
-
-from mcp_excel_server.api.tools.excel import (
-    read_data_from_excel,
-    write_data_to_excel,
-    merge_cells,
-    unmerge_cells,
-    list_excel_files
-)
-
 
 # Export all tools
 __all__ = [
@@ -50,10 +45,14 @@ __all__ = [
     'move_worksheet',
     'get_worksheet',
     'list_worksheets',
+    'merge_cells',
+    'unmerge_cells',
     
     # Workbook tools
     'create_workbook',
-    'get_workbook_info',
+    'list_workbooks',
+    'read_workbook_data',
+    'write_workbook_data',
     
     # Range tools
     'delete_range',
@@ -61,12 +60,5 @@ __all__ = [
     'move_range',
     'merge_range',
     'unmerge_range',
-    'validate_range',
-    
-    # Excel tools
-    'read_data_from_excel',
-    'write_data_to_excel',
-    'merge_cells',
-    'unmerge_cells',
-    'list_excel_files'
+    'validate_range'
 ] 

@@ -5,7 +5,6 @@ Excel data operations for Excel MCP Server.
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.worksheet.worksheet import Worksheet
@@ -13,14 +12,18 @@ from openpyxl.utils import get_column_letter
 
 from mcp_excel_server.core.exceptions import DataError
 from mcp_excel_server.core.cell_utils import parse_cell_range
-
 from mcp_excel_server.utils import get_logger
 from mcp_excel_server.utils.logger import audit_event
+from mcp_excel_server.config.settings import settings
 
 logger = get_logger(__name__)
 
+def get_full_path(filename: str) -> Path:
+    """Get the full path for a workbook file."""
+    return Path(settings.excel_mcp_folder) / filename
+
 def read_excel_range(
-    filepath: Path | str,
+    filepath: str,
     sheet_name: str,
     start_cell: str = "A1",
     end_cell: str | None = None,
@@ -28,7 +31,8 @@ def read_excel_range(
 ) -> list[dict[str, Any]]:
     """Read data from Excel range with optional preview mode"""
     try:
-        wb = load_workbook(filepath, read_only=False)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path), read_only=False)
         
         if sheet_name not in wb.sheetnames:
             raise DataError(f"Sheet '{sheet_name}' not found")
@@ -76,11 +80,11 @@ def read_excel_range(
 
         data = []
         for row in range(start_row, end_row + 1):
-            row_data = []
+            row_data = {}
             for col in range(start_col, end_col + 1):
                 cell = ws.cell(row=row, column=col)
-                row_data.append(cell.value)
-            if any(v is not None for v in row_data):
+                row_data[get_column_letter(col)] = cell.value
+            if any(v is not None for v in row_data.values()):
                 data.append(row_data)
 
         wb.close()
@@ -106,7 +110,8 @@ def write_data(
         if not data:
             raise DataError("No data provided to write")
             
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
 
         # If no sheet specified, use active sheet
         if not sheet_name:
@@ -130,12 +135,12 @@ def write_data(
         if len(data) > 0:
             _write_data_to_worksheet(ws, data, start_cell)
 
-        wb.save(filepath)
+        wb.save(str(path))
         wb.close()
 
         # Audit the write event
         audit_event("write", {
-            "file": filepath,
+            "file": str(path),
             "sheet": sheet_name,
             "start_cell": start_cell,
             "data_preview": str(data)[:500]  # Log a preview of the data
@@ -280,12 +285,13 @@ def read_data_from_excel(
     Returns:
         List of Dict containing the read data
     """
-    raise NotImplementedError("read_data_from_excel is not yet implemented.")
+    path = get_full_path(filename)
+    return read_excel_range(str(path), sheet_name, range_str or "A1")
 
 def write_data_to_excel(
     filename: str,
     sheet_name: str,
-    data: List[Dict[str, Any]],
+    data: List[List[Any]],
     start_cell: str = "A1",
     header: bool = True
 ) -> None:
@@ -294,17 +300,18 @@ def write_data_to_excel(
     Args:
         filename: Name of the Excel file
         sheet_name: Name of the sheet to write to
-        data: List of Dict containing the data to write
+        data: List of List containing the data to write
         start_cell: Cell to start writing from (e.g. 'A1')
         header: Whether to write headers
     """
-    raise NotImplementedError("write_data_to_excel is not yet implemented.")
+    path = get_full_path(filename)
+    write_data(str(path), sheet_name, data, start_cell)
 
 def read_range(
     filename: str,
     sheet_name: str,
     range_str: str
-) -> List[List[Any]]:
+) -> List[Dict[str, Any]]:
     """Read data from a specific range in an Excel workbook.
     
     Args:
@@ -313,9 +320,10 @@ def read_range(
         range_str: Range to read (e.g. 'A1:B10')
         
     Returns:
-        List of List containing the read data
+        List of Dict containing the read data
     """
-    raise NotImplementedError("read_range is not yet implemented.")
+    path = get_full_path(filename)
+    return read_excel_range(str(path), sheet_name, range_str)
 
 def write_range(
     filename: str,
@@ -331,7 +339,8 @@ def write_range(
         range_str: Range to write to (e.g. 'A1:B10')
         data: List of List containing the data to write
     """
-    raise NotImplementedError("write_range is not yet implemented.")
+    path = get_full_path(filename)
+    write_data(str(path), sheet_name, data, range_str)
 
 def get_next_available_row(worksheet) -> int:
     """Return the next available (empty) row index in the worksheet (1-based)."""

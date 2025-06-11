@@ -78,7 +78,7 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
             logger.setLevel(logging.INFO)
             logger.error(f"Failed to configure logger: {str(e)}")
     
-    return logger
+    return logger 
 
 def get_audit_logger():
     """Return a logger for audit events, writing to logs/excel-mcp-audit.log."""

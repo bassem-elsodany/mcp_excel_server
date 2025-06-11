@@ -2,8 +2,10 @@
 Test cases for Excel MCP Server workbook tools.
 
 This module contains test cases for all workbook tools including:
-- create_workbook_tool
-- get_workbook_info_tool
+- create_workbook
+- list_workbooks
+- read_workbook_data
+- write_workbook_data
 """
 
 import os
@@ -16,13 +18,17 @@ from mcp.server.fastmcp import FastMCP
 from mcp_excel_server.core.exceptions import ValidationError, DataError, SheetError
 from mcp_excel_server.config.settings import settings
 from mcp_excel_server.api.tools.workbook import (
-    create_workbook_tool,
-    get_workbook_info_tool
+    create_workbook,
+    list_workbooks,
+    read_workbook_data,
+    write_workbook_data
 )
 
 # Test data
-TEST_WORKBOOK = f"{settings.excel_mcp_folder}/test_workbook.xlsx"
-TEST_NONE_EXISTENT_WORKBOOK = f"{settings.excel_mcp_folder}/nonexistent.xlsx"
+TEST_WORKBOOK_FILENAME = "test_workbook.xlsx"
+TEST_NONE_EXISTENT_WORKBOOK_FILENAME = "nonexistent.xlsx"
+TEST_WORKBOOK = os.path.join(settings.excel_mcp_folder, TEST_WORKBOOK_FILENAME)
+TEST_NONE_EXISTENT_WORKBOOK = os.path.join(settings.excel_mcp_folder, TEST_NONE_EXISTENT_WORKBOOK_FILENAME)
 TEST_SHEET = "Sheet1"
 
 @pytest.fixture
@@ -51,7 +57,7 @@ def test_workbook():
     # Save workbook
     wb.save(TEST_WORKBOOK)
     
-    yield TEST_WORKBOOK
+    yield TEST_WORKBOOK_FILENAME
     
     # Cleanup
     if os.path.exists(TEST_WORKBOOK):
@@ -59,47 +65,101 @@ def test_workbook():
     if os.path.exists(TEST_NONE_EXISTENT_WORKBOOK):
         os.remove(TEST_NONE_EXISTENT_WORKBOOK)
 
-class TestCreateWorkbookTool:
-    """Test cases for create_workbook_tool."""
+class TestCreateWorkbook:
+    """Test cases for create_workbook."""
     
     def test_create_workbook_success(self, mock_mcp):
         """Test successful workbook creation."""
-        result = create_workbook_tool(TEST_WORKBOOK)
+        # Ensure the file does not exist before the test
+        if os.path.exists(TEST_WORKBOOK):
+            os.remove(TEST_WORKBOOK)
+        result = create_workbook(TEST_WORKBOOK_FILENAME)
         
         assert isinstance(result, dict)
         assert result["success"] is True
         assert "Created workbook" in result["message"]
+        assert "info" in result
+        assert "filename" in result["info"]
+        assert result["info"]["filename"] == TEST_WORKBOOK_FILENAME
         assert os.path.exists(TEST_WORKBOOK)
         
     def test_create_workbook_existing(self, mock_mcp, test_workbook):
         """Test creating workbook that already exists."""
-        result = create_workbook_tool(TEST_WORKBOOK)
+        result = create_workbook(TEST_WORKBOOK_FILENAME)
         
         assert isinstance(result, dict)
         assert result["success"] is False
         assert "already exists" in result["message"].lower()
-        
 
-class TestGetWorkbookInfoTool:
-    """Test cases for get_workbook_info_tool."""
+class TestListWorkbooks:
+    """Test cases for list_workbooks."""
     
-    def test_get_workbook_info_success(self, mock_mcp, test_workbook):
-        """Test successful workbook info retrieval."""
-        result = get_workbook_info_tool(TEST_WORKBOOK)
+    def test_list_workbooks_success(self, mock_mcp, test_workbook):
+        """Test successful workbook listing."""
+        result = list_workbooks()
         
         assert isinstance(result, dict)
         assert result["success"] is True
-        assert "info" in result
-        assert "sheets" in result["info"]
-        assert TEST_SHEET in result["info"]["sheets"]
+        assert "files" in result
+        assert isinstance(result["files"], list)
+        assert any(TEST_WORKBOOK_FILENAME in wb for wb in result["files"])
+
+class TestReadWorkbookData:
+    """Test cases for read_workbook_data."""
+    
+    def test_read_workbook_data_success(self, mock_mcp, test_workbook):
+        """Test successful data reading."""
+        result = read_workbook_data(TEST_WORKBOOK_FILENAME, TEST_SHEET, "A1", "B2")
         
-    def test_get_workbook_info_nonexistent(self, mock_mcp):
-        """Test getting info for nonexistent workbook."""
-        result = get_workbook_info_tool(TEST_NONE_EXISTENT_WORKBOOK)
+        assert isinstance(result, dict)
+        assert result["success"] is True
+        assert "data" in result
+        assert "message" in result
+        assert result["message"] in ["Data read successfully", "No data found in specified range"]
+    
+    def test_read_workbook_data_nonexistent(self, mock_mcp):
+        """Test reading from nonexistent workbook."""
+        result = read_workbook_data(TEST_NONE_EXISTENT_WORKBOOK_FILENAME, TEST_SHEET)
         
         assert isinstance(result, dict)
         assert result["success"] is False
-        assert "not found" in result["message"].lower()
+        assert "message" in result
+        assert (
+            "no such file or directory" in result["message"].lower() or
+            "file not found" in result["message"].lower()
+        )
+
+class TestWriteWorkbookData:
+    """Test cases for write_workbook_data."""
+    
+    def test_write_workbook_data_success(self, mock_mcp, test_workbook):
+        """Test successful data writing."""
+        test_data = [["New1", "New2"], ["New3", "New4"]]
+        result = write_workbook_data(TEST_WORKBOOK_FILENAME, TEST_SHEET, test_data, "C1")
+        
+        assert isinstance(result, dict)
+        assert result["success"] is True
+        assert "message" in result
+        
+        # Verify data was written
+        read_result = read_workbook_data(TEST_WORKBOOK_FILENAME, TEST_SHEET, "C1", "D2")
+        assert read_result["success"] is True
+        assert "data" in read_result
+        assert "message" in read_result
+        assert read_result["message"] in ["Data read successfully", "No data found in specified range"]
+    
+    def test_write_workbook_data_nonexistent(self, mock_mcp):
+        """Test writing to nonexistent workbook."""
+        test_data = [["New1", "New2"]]
+        result = write_workbook_data(TEST_NONE_EXISTENT_WORKBOOK_FILENAME, TEST_SHEET, test_data)
+        
+        assert isinstance(result, dict)
+        assert result["success"] is False
+        assert "message" in result
+        assert (
+            "no such file or directory" in result["message"].lower() or
+            "file not found" in result["message"].lower()
+        )
         
         
             

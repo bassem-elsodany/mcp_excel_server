@@ -27,9 +27,10 @@ from mcp_excel_server.api.tools.worksheet import (
 )
 
 # Test data
-TEST_WORKBOOK = f"{settings.excel_mcp_folder}/test_workbook.xlsx"
-TEST_INVALID_WORKBOOK = f"{settings.excel_mcp_folder}/invalid/name.xlsx"
-TEST_NONE_EXISTENT_WORKBOOK = f"{settings.excel_mcp_folder}/nonexistent.xlsx"
+TEST_WORKBOOK_FILENAME = "test_workbook.xlsx"
+TEST_WORKBOOK = os.path.join(settings.excel_mcp_folder, TEST_WORKBOOK_FILENAME)
+TEST_INVALID_WORKBOOK = "/invalid/name.xlsx"
+TEST_NONE_EXISTENT_WORKBOOK = "/nonexistent.xlsx"
 TEST_SHEET = "Sheet1"
 TEST_NEW_SHEET = "NewSheet"
 TEST_COPY_SHEET = "CopySheet"
@@ -61,7 +62,7 @@ def test_workbook():
     # Save workbook
     wb.save(TEST_WORKBOOK)
     
-    yield TEST_WORKBOOK
+    yield TEST_WORKBOOK_FILENAME
     
     # Cleanup
     if os.path.exists(TEST_WORKBOOK):
@@ -72,7 +73,7 @@ class TestCreateWorksheetTool:
     
     def test_create_worksheet_success(self, mock_mcp, test_workbook):
         """Test successful worksheet creation."""
-        result = create_worksheet(TEST_WORKBOOK, TEST_NEW_SHEET)
+        result = create_worksheet(test_workbook, TEST_NEW_SHEET)
         
         assert isinstance(result, dict)
         assert result["success"] is True
@@ -82,10 +83,10 @@ class TestCreateWorksheetTool:
     def test_create_worksheet_already_exists(self, mock_mcp, test_workbook):
         """Test creating worksheet that already exists."""
         # First create the worksheet
-        create_worksheet(TEST_WORKBOOK, TEST_NEW_SHEET)
+        create_worksheet(test_workbook, TEST_NEW_SHEET)
         
         # Try to create it again
-        result = create_worksheet(TEST_WORKBOOK, TEST_NEW_SHEET)
+        result = create_worksheet(test_workbook, TEST_NEW_SHEET)
         
         assert isinstance(result, dict)
         assert result["success"] is False
@@ -99,9 +100,9 @@ class TestDeleteWorksheetTool:
         """Test successful worksheet deletion."""
        
         # First create the worksheet
-        create_worksheet(TEST_WORKBOOK, TEST_NEW_SHEET)
+        create_worksheet(test_workbook, TEST_NEW_SHEET)
 
-        result = delete_worksheet(TEST_WORKBOOK, TEST_SHEET)
+        result = delete_worksheet(test_workbook, TEST_SHEET)
         
         assert isinstance(result, dict)
         assert result["success"] is True
@@ -110,8 +111,8 @@ class TestDeleteWorksheetTool:
     def test_delete_worksheet_not_found(self, mock_mcp, test_workbook):
         """Test deleting non-existent worksheet."""
          # First create the worksheet
-        create_worksheet(TEST_WORKBOOK, TEST_NEW_SHEET)
-        result = delete_worksheet(TEST_WORKBOOK, "NonExistentSheet")
+        create_worksheet(test_workbook, TEST_NEW_SHEET)
+        result = delete_worksheet(test_workbook, "NonExistentSheet")
         
         assert isinstance(result, dict)
         assert result["success"] is False
@@ -123,7 +124,7 @@ class TestRenameWorksheetTool:
     
     def test_rename_worksheet_success(self, mock_mcp, test_workbook):
         """Test successful worksheet rename."""
-        result = rename_worksheet(TEST_WORKBOOK, TEST_SHEET, TEST_NEW_SHEET)
+        result = rename_worksheet(test_workbook, TEST_SHEET, TEST_NEW_SHEET)
         
         assert isinstance(result, dict)
         assert result["success"] is True
@@ -132,7 +133,7 @@ class TestRenameWorksheetTool:
         
     def test_rename_worksheet_not_found(self, mock_mcp, test_workbook):
         """Test renaming non-existent worksheet."""
-        result = rename_worksheet(TEST_WORKBOOK, "NonExistentSheet", TEST_NEW_SHEET)
+        result = rename_worksheet(test_workbook, "NonExistentSheet", TEST_NEW_SHEET)
         
         assert isinstance(result, dict)
         assert result["success"] is False
@@ -144,7 +145,7 @@ class TestCopyWorksheetTool:
     
     def test_copy_worksheet_success(self, mock_mcp, test_workbook):
         """Test successful worksheet copy."""
-        result = copy_worksheet(TEST_WORKBOOK, TEST_SHEET, TEST_COPY_SHEET)
+        result = copy_worksheet(test_workbook, TEST_SHEET, TEST_COPY_SHEET)
         
         assert isinstance(result, dict)
         assert result["success"] is True
@@ -153,7 +154,7 @@ class TestCopyWorksheetTool:
         
     def test_copy_worksheet_not_found(self, mock_mcp, test_workbook):
         """Test copying non-existent worksheet."""
-        result = copy_worksheet(TEST_WORKBOOK, "NonExistentSheet", TEST_COPY_SHEET)
+        result = copy_worksheet(test_workbook, "NonExistentSheet", TEST_COPY_SHEET)
         
         assert isinstance(result, dict)
         assert result["success"] is False
@@ -166,8 +167,8 @@ class TestMoveWorksheetTool:
     def test_move_worksheet_success(self, mock_mcp, test_workbook):
         """Test successful worksheet move."""
          # First create the worksheet
-        create_worksheet(TEST_WORKBOOK, TEST_NEW_SHEET)
-        result = move_worksheet(TEST_WORKBOOK, TEST_SHEET, 1)
+        create_worksheet(test_workbook, TEST_NEW_SHEET)
+        result = move_worksheet(test_workbook, TEST_SHEET, 1)
         
         assert isinstance(result, dict)
         assert result["success"] is True
@@ -176,7 +177,7 @@ class TestMoveWorksheetTool:
         
     def test_move_worksheet_not_found(self, mock_mcp, test_workbook):
         """Test moving non-existent worksheet."""
-        result = move_worksheet(TEST_WORKBOOK, "NonExistentSheet", 1)
+        result = move_worksheet(test_workbook, "NonExistentSheet", 1)
         
         assert isinstance(result, dict)
         assert result["success"] is False

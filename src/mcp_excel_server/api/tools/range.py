@@ -20,7 +20,7 @@ from mcp_excel_server.core.sheet import (
 from mcp_excel_server.core.exceptions import RangeError
 
 @register_tool
-def delete_range_tool(
+def delete_range(
     filename: str,
     sheet_name: str,
     start_cell: str,
@@ -67,7 +67,7 @@ def delete_range_tool(
         }
 
 @register_tool
-def copy_range_tool(
+def copy_range(
     filename: str,
     sheet_name: str,
     source_start: str,
@@ -114,7 +114,7 @@ def copy_range_tool(
         }
 
 @register_tool
-def move_range_tool(
+def move_range(
     filename: str,
     sheet_name: str,
     source_range: str,
@@ -168,7 +168,7 @@ def move_range_tool(
         }
 
 @register_tool
-def merge_range_tool(
+def merge_range(
     filename: str,
     sheet_name: str,
     start_cell: str,
@@ -213,7 +213,7 @@ def merge_range_tool(
         }
 
 @register_tool
-def unmerge_range_tool(
+def unmerge_range(
     filename: str,
     sheet_name: str,
     start_cell: str,
@@ -258,7 +258,7 @@ def unmerge_range_tool(
         }
     
 @register_tool
-def validate_range_tool(
+def validate_range(
     filename: str,
     sheet_name: str,
     range_str: str

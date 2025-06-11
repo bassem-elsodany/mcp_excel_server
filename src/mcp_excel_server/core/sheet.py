@@ -2,9 +2,9 @@
 Sheet operations for Excel MCP Server.
 """
 
-
 from typing import Any, Optional
 from copy import copy
+from pathlib import Path
 
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -13,16 +13,21 @@ from openpyxl.styles import Font, Border, PatternFill, Side, Alignment
 
 from mcp_excel_server.core.cell_utils import parse_cell_range
 from mcp_excel_server.core.exceptions import SheetError, ValidationError
-
 from mcp_excel_server.utils import get_logger
 from mcp_excel_server.utils.logger import audit_event
+from mcp_excel_server.config.settings import settings
 
 logger = get_logger(__name__)
+
+def get_full_path(filename: str) -> Path:
+    """Get the full path for a workbook file."""
+    return Path(settings.excel_mcp_folder) / filename
 
 def copy_sheet(filepath: str, source_sheet: str, target_sheet: str) -> dict[str, Any]:
     """Copy a worksheet within the same workbook."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if source_sheet not in wb.sheetnames:
             raise SheetError(f"Source sheet '{source_sheet}' not found")
             
@@ -33,7 +38,7 @@ def copy_sheet(filepath: str, source_sheet: str, target_sheet: str) -> dict[str,
         target = wb.copy_worksheet(source)
         target.title = target_sheet
         
-        wb.save(filepath)
+        wb.save(str(path))
         return {"message": f"Sheet '{source_sheet}' copied to '{target_sheet}'"}
     except SheetError as e:
         logger.error(str(e))
@@ -45,7 +50,8 @@ def copy_sheet(filepath: str, source_sheet: str, target_sheet: str) -> dict[str,
 def delete_sheet(filepath: str, sheet_name: str) -> dict[str, Any]:
     """Delete a worksheet from the workbook."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             raise SheetError(f"Sheet '{sheet_name}' not found")
             
@@ -53,7 +59,7 @@ def delete_sheet(filepath: str, sheet_name: str) -> dict[str, Any]:
             raise SheetError("Cannot delete the only sheet in workbook")
             
         del wb[sheet_name]
-        wb.save(filepath)
+        wb.save(str(path))
         return {"message": f"Sheet '{sheet_name}' deleted"}
     except SheetError as e:
         logger.error(str(e))
@@ -65,7 +71,8 @@ def delete_sheet(filepath: str, sheet_name: str) -> dict[str, Any]:
 def rename_sheet(filepath: str, old_name: str, new_name: str) -> dict[str, Any]:
     """Rename a worksheet."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if old_name not in wb.sheetnames:
             raise SheetError(f"Sheet '{old_name}' not found")
             
@@ -74,7 +81,7 @@ def rename_sheet(filepath: str, old_name: str, new_name: str) -> dict[str, Any]:
             
         sheet = wb[old_name]
         sheet.title = new_name
-        wb.save(filepath)
+        wb.save(str(path))
         return {"message": f"Sheet renamed from '{old_name}' to '{new_name}'"}
     except SheetError as e:
         logger.error(str(e))
@@ -169,7 +176,8 @@ def delete_range(worksheet: Worksheet, start_cell: str, end_cell: str | None = N
 def merge_range(filepath: str, sheet_name: str, start_cell: str, end_cell: str) -> dict[str, Any]:
     """Merge a range of cells."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             raise SheetError(f"Sheet '{sheet_name}' not found")
             
@@ -181,10 +189,10 @@ def merge_range(filepath: str, sheet_name: str, start_cell: str, end_cell: str) 
         range_string = format_range_string(start_row, start_col, end_row, end_col)
         worksheet = wb[sheet_name]
         worksheet.merge_cells(range_string)
-        wb.save(filepath)
+        wb.save(str(path))
         result = {"success": True, "message": f"Merged range {range_string} in {sheet_name}"}
         audit_event("merge", {
-            "file": filepath,
+            "file": str(path),
             "sheet": sheet_name,
             "start_cell": start_cell,
             "end_cell": end_cell,
@@ -201,7 +209,8 @@ def merge_range(filepath: str, sheet_name: str, start_cell: str, end_cell: str) 
 def unmerge_range(filepath: str, sheet_name: str, start_cell: str, end_cell: str) -> dict[str, Any]:
     """Unmerge a range of cells."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             raise SheetError(f"Sheet '{sheet_name}' not found")
             
@@ -222,10 +231,10 @@ def unmerge_range(filepath: str, sheet_name: str, start_cell: str, end_cell: str
             raise SheetError(f"Range '{range_string}' is not merged")
             
         worksheet.unmerge_cells(range_string)
-        wb.save(filepath)
+        wb.save(str(path))
         result = {"success": True, "message": f"Unmerged range {range_string} in {sheet_name}"}
         audit_event("unmerge", {
-            "file": filepath,
+            "file": str(path),
             "sheet": sheet_name,
             "start_cell": start_cell,
             "end_cell": end_cell,
@@ -249,7 +258,8 @@ def copy_range_operation(
 ) -> dict:
     """Copy a range of cells to another location."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             logger.error(f"Sheet '{sheet_name}' not found")
             raise ValidationError(f"Sheet '{sheet_name}' not found")
@@ -311,7 +321,7 @@ def copy_range_operation(
                         wrap_text=source_cell.alignment.wrap_text
                     )
 
-        wb.save(filepath)
+        wb.save(str(path))
         return {"message": f"Range copied successfully"}
 
     except (ValidationError, SheetError):
@@ -329,7 +339,8 @@ def delete_range_operation(
 ) -> dict[str, Any]:
     """Delete a range of cells and shift remaining cells."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             raise SheetError(f"Sheet '{sheet_name}' not found")
             
@@ -364,7 +375,7 @@ def delete_range_operation(
         elif shift_direction == "left":
             worksheet.delete_cols(start_col, (end_col or start_col) - start_col + 1)
             
-        wb.save(filepath)
+        wb.save(str(path))
         
         return {"message": f"Range {range_string} deleted successfully"}
     except (ValidationError, SheetError) as e:
@@ -377,11 +388,12 @@ def delete_range_operation(
 def create_sheet(filepath: str, sheet_name: str) -> dict[str, Any]:
     """Create a new worksheet in the workbook if it doesn't exist."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name in wb.sheetnames:
             raise SheetError(f"Sheet '{sheet_name}' already exists")
         wb.create_sheet(sheet_name)
-        wb.save(filepath)
+        wb.save(str(path))
         return {"message": f"Sheet '{sheet_name}' created successfully"}
     except SheetError as e:
         logger.error(str(e))
@@ -403,7 +415,8 @@ def move_sheet(filepath: str, sheet_name: str, index: int) -> dict[str, Any]:
         - message: str describing the result
     """
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             raise SheetError(f"Sheet '{sheet_name}' not found")
             
@@ -412,7 +425,7 @@ def move_sheet(filepath: str, sheet_name: str, index: int) -> dict[str, Any]:
             
         sheet = wb[sheet_name]
         wb.move_sheet(sheet_name, offset=index - wb.index(sheet))
-        wb.save(filepath)
+        wb.save(str(path))
         return {"message": f"Moved sheet '{sheet_name}' to position {index}"}
     except SheetError as e:
         logger.error(str(e))
@@ -434,7 +447,8 @@ def get_sheet(filepath: str, sheet_name: str) -> dict[str, Any]:
         - sheet: Worksheet object
     """
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             raise SheetError(f"Sheet '{sheet_name}' not found")
             
@@ -459,7 +473,8 @@ def list_sheets(filepath: str) -> list[Any]:
         List of worksheet objects
     """
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         return [wb[sheet_name] for sheet_name in wb.sheetnames]
     except Exception as e:
         logger.error(f"Failed to list sheets: {e}")

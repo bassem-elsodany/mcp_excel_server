@@ -1,5 +1,6 @@
 import re
 from typing import Any
+from pathlib import Path
 
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
@@ -7,10 +8,14 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from .cell_utils import parse_cell_range, validate_cell_reference
 from .exceptions import ValidationError
-
 from mcp_excel_server.utils import get_logger
+from mcp_excel_server.config.settings import settings
 
 logger = get_logger(__name__)
+
+def get_full_path(filename: str) -> Path:
+    """Get the full path for a workbook file."""
+    return Path(settings.excel_mcp_folder) / filename
 
 def validate_formula_in_cell_operation(
     filepath: str,
@@ -20,7 +25,8 @@ def validate_formula_in_cell_operation(
 ) -> dict[str, Any]:
     """Validate Excel formula before writing"""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             raise ValidationError(f"Sheet '{sheet_name}' not found")
 
@@ -111,7 +117,8 @@ def validate_range_in_sheet_operation(
 ) -> dict[str, Any]:
     """Validate if a range exists in a worksheet and return data range info."""
     try:
-        wb = load_workbook(filepath)
+        path = get_full_path(filepath)
+        wb = load_workbook(str(path))
         if sheet_name not in wb.sheetnames:
             raise ValidationError(f"Sheet '{sheet_name}' not found")
             
