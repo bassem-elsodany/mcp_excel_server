@@ -13,7 +13,6 @@ This project provides a set of tools for interacting with Excel workbooks and wo
     - [Workbook Tools](#workbook-tools)
     - [Worksheet Tools](#worksheet-tools)
     - [Range Tools](#range-tools)
-    - [Excel Data Tools](#excel-data-tools)
 4. [How to Use the Tools](#how-to-use-the-tools)
     - [Installation](#installation)
     - [Integration with AI Agents](#integration-with-ai-agents)
@@ -246,16 +245,31 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `message`: A message describing the result.
     - `range_info`: Information about the range (start_cell, end_cell, num_rows, num_cols).
 
-### Excel Data Tools
-- **[read_data_from_excel](src/mcp_excel_server/tools/excel_data_tools.py)**: Read data from a worksheet
-- **[write_data_to_excel](src/mcp_excel_server/tools/excel_data_tools.py)**: Write data to a worksheet
-- **[merge_cells](src/mcp_excel_server/tools/excel_data_tools.py)**: Merge cells (alias)
-- **[unmerge_cells](src/mcp_excel_server/tools/excel_data_tools.py)**: Unmerge cells (alias)
-- **[list_excel_files](src/mcp_excel_server/tools/excel_data_tools.py)**: List all Excel files in the workspace
-
 ### Registering Tools
 
-Tools in MCP Excel Server are registered using the `@mcp_tool` decorator. This decorator provides metadata about the tool, such as its name, description, and parameters. When the server starts, it automatically registers all tools, making them available for use by AI Agents.
+All MCP tools in this project are registered using the `@register_tool` decorator. This decorator is defined in [`src/mcp_excel_server/api/registry.py`](src/mcp_excel_server/api/registry.py) and serves the following purposes:
+
+- **Automatic Registration:** When you annotate a function with `@register_tool`, it is automatically registered as an MCP tool with the server.
+- **Name Prefixing:** The tool name is automatically prefixed with the value of `settings.tool_prefix` (by default, `"EXCEL_MCP_"`). For example, a function named `create_workbook` becomes a tool named `EXCEL_MCP_create_workbook`.
+- **Integration with FastMCP:** The decorator uses the MCP server's `.tool()` method to make the function available for remote invocation by AI agents or other clients.
+
+**Example Usage:**
+```python
+from mcp_excel_server.api.registry import register_tool
+
+@register_tool
+def create_worksheet(filename: str, sheet_name: str) -> dict:
+    """Creates a new worksheet in the specified Excel workbook."""
+    # ... implementation ...
+```
+
+**How it works:**
+- The decorator constructs the tool name by concatenating the prefix and the function name.
+- It registers the function with the MCP server so it can be called as a tool.
+- The tool is then discoverable and invokable by any MCP-compatible client.
+
+**Configuration:**
+- You can change the prefix by setting the `EXCEL_MCP_SERVER_TOOL_PREFIX` environment variable or editing the `tool_prefix` in your settings.
 
 ---
 
