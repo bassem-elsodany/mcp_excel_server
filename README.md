@@ -60,25 +60,191 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
 ## Available Tools
 
 ### Workbook Tools
-- **[create_workbook](src/mcp_excel_server/tools/workbook_tools.py)**: Create a new Excel workbook
-- **[get_workbook_info](src/mcp_excel_server/tools/workbook_tools.py)**: Get information about a workbook (sheets, properties)
+- **[create_workbook](src/mcp_excel_server/api/tools/workbook.py)**: Create a new Excel workbook.
+  - **Args:**
+    - `filename`: Name of the Excel file to create.
+    - `sheet_name`: Name of the initial worksheet.
+  - **Returns:**
+    - `success`: True if the workbook was created successfully.
+    - `message`: A message describing the result.
+    - `info`: Additional information about the created workbook.
+
+- **[list_workbooks](src/mcp_excel_server/api/tools/workbook.py)**: List all Excel files in the configured directory.
+  - **Returns:**
+    - `success`: True if the operation succeeded.
+    - `files`: List of Excel filenames.
+    - `message`: Error message if success is False.
+
+- **[read_workbook_data](src/mcp_excel_server/api/tools/workbook.py)**: Read data from a specific range in a workbook.
+  - **Args:**
+    - `filepath`: Name of the Excel file.
+    - `sheet_name`: Name of the worksheet to read from.
+    - `start_cell`: Starting cell reference (e.g., "A1").
+    - `end_cell`: Ending cell reference (e.g., "B10"). If None, reads to the end of data.
+    - `preview_only`: If True, returns only a preview of the data.
+  - **Returns:**
+    - `success`: True if the data was read successfully.
+    - `data`: Data from Excel worksheet as formatted string.
+    - `message`: Additional message describing the result.
+
+- **[write_workbook_data](src/mcp_excel_server/api/tools/workbook.py)**: Write data to a specific range in a workbook.
+  - **Args:**
+    - `filepath`: Name of the Excel file.
+    - `sheet_name`: Name of the worksheet to write to.
+    - `data`: List of lists containing data to write (sublists are rows).
+    - `start_cell`: Cell to start writing to. If None, appends after last row.
+  - **Returns:**
+    - `success`: True if the data was written successfully.
+    - `message`: A message describing the result.
 
 ### Worksheet Tools
-- **[create_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Add a new worksheet
-- **[delete_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Remove a worksheet
-- **[rename_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Rename a worksheet
-- **[copy_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Duplicate a worksheet
-- **[move_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Change worksheet order
-- **[get_worksheet](src/mcp_excel_server/tools/worksheet_tools.py)**: Get worksheet details
-- **[list_worksheets](src/mcp_excel_server/tools/worksheet_tools.py)**: List all worksheets in a workbook
+- **[create_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Add a new worksheet.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name for the new worksheet.
+    - `index`: The position to insert the sheet (0-based). If not provided, appends to the end.
+  - **Returns:**
+    - `success`: True if the worksheet was created successfully.
+    - `message`: A message describing the result.
+    - `sheet_name`: The name of the created sheet.
+
+- **[delete_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Remove a worksheet.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet to delete.
+  - **Returns:**
+    - `success`: True if the worksheet was deleted successfully.
+    - `message`: A message describing the result.
+
+- **[rename_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Rename a worksheet.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `old_name`: The current name of the worksheet.
+    - `new_name`: The new name for the worksheet.
+  - **Returns:**
+    - `success`: True if the worksheet was renamed successfully.
+    - `message`: A message describing the result.
+    - `new_name`: The new name of the worksheet.
+
+- **[copy_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Duplicate a worksheet.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet to copy.
+    - `new_name`: The name for the new worksheet.
+  - **Returns:**
+    - `success`: True if the worksheet was copied successfully.
+    - `message`: A message describing the result.
+    - `new_name`: The name of the new worksheet.
+
+- **[move_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Change worksheet order.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet to move.
+    - `index`: The new position for the worksheet (0-based).
+  - **Returns:**
+    - `success`: True if the worksheet was moved successfully.
+    - `message`: A message describing the result.
+    - `sheet_name`: The name of the moved worksheet.
+
+- **[get_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Get worksheet details.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet to retrieve information for.
+  - **Returns:**
+    - `success`: True if the worksheet was found.
+    - `message`: A message describing the result.
+    - `sheet`: Worksheet information (structure may vary).
+
+- **[list_worksheets](src/mcp_excel_server/api/tools/worksheet.py)**: List all worksheets in a workbook.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+  - **Returns:**
+    - `success`: True if the operation succeeded.
+    - `message`: A message describing the result.
+    - `sheets`: List of worksheet names.
+
+- **[merge_cells](src/mcp_excel_server/api/tools/worksheet.py)**: Merge a range of cells.
+  - **Args:**
+    - `filename`: Name of the Excel file.
+    - `sheet_name`: Name of the worksheet.
+    - `start_cell`: Top-left cell of range to merge.
+    - `end_cell`: Bottom-right cell of range to merge.
+  - **Returns:**
+    - `success`: True if the cells were merged successfully.
+    - `message`: A message describing the result.
+
+- **[unmerge_cells](src/mcp_excel_server/api/tools/worksheet.py)**: Unmerge a range of cells.
+  - **Args:**
+    - `filename`: Name of the Excel file.
+    - `sheet_name`: Name of the worksheet.
+    - `start_cell`: Top-left cell of range to unmerge.
+    - `end_cell`: Bottom-right cell of range to unmerge.
+  - **Returns:**
+    - `success`: True if the cells were unmerged successfully.
+    - `message`: A message describing the result.
 
 ### Range Tools
-- **[merge_range](src/mcp_excel_server/tools/range_tools.py)**: Merge a range of cells
-- **[unmerge_range](src/mcp_excel_server/tools/range_tools.py)**: Unmerge a range of cells
-- **[copy_range](src/mcp_excel_server/tools/range_tools.py)**: Copy a range of cells
-- **[move_range](src/mcp_excel_server/tools/range_tools.py)**: Move a range of cells
-- **[delete_range](src/mcp_excel_server/tools/range_tools.py)**: Delete a range of cells
-- **[validate_range](src/mcp_excel_server/tools/range_tools.py)**: Validate a cell range
+- **[delete_range](src/mcp_excel_server/api/tools/range.py)**: Delete a range of cells.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet.
+    - `start_cell`: The top-left cell of the range (e.g., "A1").
+    - `end_cell`: The bottom-right cell of the range (e.g., "B2").
+    - `shift_direction`: The direction to shift cells after deletion ("up" or "left"). Defaults to "up".
+  - **Returns:**
+    - `success`: True if the range was deleted successfully.
+    - `message`: A message describing the result.
+
+- **[copy_range](src/mcp_excel_server/api/tools/range.py)**: Copy a range of cells.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet.
+    - `source_start`: The top-left cell of the source range (e.g., "A1").
+    - `source_end`: The bottom-right cell of the source range (e.g., "B2").
+    - `target_start`: The top-left cell of the target range (e.g., "C1").
+  - **Returns:**
+    - `success`: True if the range was copied successfully.
+    - `message`: A message describing the result.
+
+- **[move_range](src/mcp_excel_server/api/tools/range.py)**: Move a range of cells.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet containing the range.
+    - `source_range`: The cell range to move (e.g., 'A1:B10').
+    - `target_range`: The cell range to move to (e.g., 'D1:E10').
+  - **Returns:**
+    - `success`: True if the range was moved successfully.
+    - `message`: A message describing the result.
+
+- **[merge_range](src/mcp_excel_server/api/tools/range.py)**: Merge a range of cells.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet.
+    - `start_cell`: The top-left cell of the range (e.g., "A1").
+    - `end_cell`: The bottom-right cell of the range (e.g., "B2").
+  - **Returns:**
+    - `success`: True if the range was merged successfully.
+    - `message`: A message describing the result.
+
+- **[unmerge_range](src/mcp_excel_server/api/tools/range.py)**: Unmerge a range of cells.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet.
+    - `start_cell`: The top-left cell of the range (e.g., "A1").
+    - `end_cell`: The bottom-right cell of the range (e.g., "B2").
+  - **Returns:**
+    - `success`: True if the range was unmerged successfully.
+    - `message`: A message describing the result.
+
+- **[validate_range](src/mcp_excel_server/api/tools/range.py)**: Validate a cell range.
+  - **Args:**
+    - `filename`: The name of the Excel file.
+    - `sheet_name`: The name of the worksheet containing the range.
+    - `range_str`: The cell range to validate (e.g., 'A1:B10').
+  - **Returns:**
+    - `success`: True if the range is valid.
+    - `message`: A message describing the result.
+    - `range_info`: Information about the range (start_cell, end_cell, num_rows, num_cols).
 
 ### Excel Data Tools
 - **[read_data_from_excel](src/mcp_excel_server/tools/excel_data_tools.py)**: Read data from a worksheet
