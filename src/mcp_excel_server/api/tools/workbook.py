@@ -196,4 +196,67 @@ def get_workbook_info(filename: str) -> Dict[str, Any]:
     logger.debug(f"get_workbook_info result: {result}")
     return result
 
+@register_tool
+def filter_rows_by_column(
+    filepath: str,
+    sheet_name: str,
+    column_name: str,
+    filter_value: str
+) -> Dict[str, Any]:
+    """List all rows from a worksheet where a specified column matches a given value.
+
+    Args:
+        filepath: Name of the Excel file.
+        sheet_name: Name of the worksheet to read from.
+        column_name: The name of the column to filter on.
+        filter_value: The value to match in the column.
+
+    Returns:
+        Dict containing:
+            success (bool): True if the operation succeeded.
+            data (str): A formatted string of matching rows.
+            message (str): A message describing the result.
+    """
+    logger.debug(f"filter_rows_by_column called with filepath={filepath}, sheet_name={sheet_name}, column_name={column_name}, filter_value={filter_value}")
+    try:
+        wb = get_workbook(filepath)
+        ws = wb[sheet_name]
+        # Find the column index for the given column name
+        header_row = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
+        try:
+            col_idx = header_row.index(column_name) + 1  # 1-based index
+        except ValueError:
+            wb.close()
+            return {
+                "success": False,
+                "data": "",
+                "message": f"Column '{column_name}' not found in the worksheet."
+            }
+        # Collect rows where the column value matches filter_value
+        matching_rows = []
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if row[col_idx - 1] == filter_value:
+                matching_rows.append(row)
+        wb.close()
+        if not matching_rows:
+            return {
+                "success": True,
+                "data": "No matching rows found.",
+                "message": "No matching rows found."
+            }
+        # Convert matching rows to a formatted string
+        data_str = "\n".join([str(row) for row in matching_rows])
+        return {
+            "success": True,
+            "data": data_str,
+            "message": f"Found {len(matching_rows)} matching rows."
+        }
+    except Exception as e:
+        logger.error(f"Error filtering rows: {e}")
+        return {
+            "success": False,
+            "data": "",
+            "message": str(e)
+        }
+
 

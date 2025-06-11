@@ -2,7 +2,7 @@
 Sheet operations for Excel MCP Server.
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, Dict, List
 from copy import copy
 from pathlib import Path
 
@@ -16,6 +16,7 @@ from mcp_excel_server.core.exceptions import SheetError, ValidationError
 from mcp_excel_server.utils import get_logger
 from mcp_excel_server.utils.logger import audit_event
 from mcp_excel_server.config.settings import settings
+from mcp_excel_server.core.workbook import get_workbook
 
 logger = get_logger(__name__)
 
@@ -479,3 +480,130 @@ def list_sheets(filepath: str) -> list[Any]:
     except Exception as e:
         logger.error(f"Failed to list sheets: {e}")
         raise SheetError(str(e))
+
+def filter_rows_by_column(
+    filename: str,
+    sheet_name: str,
+    column_name: str,
+    filter_value: str
+) -> Dict[str, Any]:
+    """List all rows from a worksheet where a specified column matches a given value.
+
+    Args:
+        filename: Name of the Excel file.
+        sheet_name: Name of the worksheet to read from.
+        column_name: The name of the column to filter on.
+        filter_value: The value to match in the column.
+
+    Returns:
+        Dict containing:
+            success (bool): True if the operation succeeded.
+            data (str): A formatted string of matching rows.
+            message (str): A message describing the result.
+    """
+    logger.debug(f"filter_rows_by_column called with filename={filename}, sheet_name={sheet_name}, column_name={column_name}, filter_value={filter_value}")
+    try:
+        wb = get_workbook(filename)
+        ws = wb[sheet_name]
+        # Find the column index for the given column name
+        header_row = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
+        try:
+            col_idx = header_row.index(column_name) + 1  # 1-based index
+        except ValueError:
+            wb.close()
+            return {
+                "success": False,
+                "data": "",
+                "message": f"Column '{column_name}' not found in the worksheet."
+            }
+        # Collect rows where the column value matches filter_value
+        matching_rows = []
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if row[col_idx - 1] == filter_value:
+                matching_rows.append(row)
+        wb.close()
+        if not matching_rows:
+            return {
+                "success": True,
+                "data": "No matching rows found.",
+                "message": "No matching rows found."
+            }
+        # Convert matching rows to a formatted string
+        data_str = "\n".join([str(row) for row in matching_rows])
+        return {
+            "success": True,
+            "data": data_str,
+            "message": f"Found {len(matching_rows)} matching rows."
+        }
+    except Exception as e:
+        logger.error(f"Error filtering rows: {e}")
+        return {
+            "success": False,
+            "data": "",
+            "message": str(e)
+        }
+
+def filter_rows_by_columns(
+    filename: str,
+    sheet_name: str,
+    column_names: List[str],
+    filter_values: List[str]
+) -> Dict[str, Any]:
+    """List all rows from a worksheet where specified columns match given values.
+
+    Args:
+        filename: Name of the Excel file.
+        sheet_name: Name of the worksheet to read from.
+        column_names: List of column names to filter on.
+        filter_values: List of values to match in the corresponding columns.
+
+    Returns:
+        Dict containing:
+            success (bool): True if the operation succeeded.
+            data (str): A formatted string of matching rows.
+            message (str): A message describing the result.
+    """
+    logger.debug(f"filter_rows_by_columns called with filename={filename}, sheet_name={sheet_name}, column_names={column_names}, filter_values={filter_values}")
+    try:
+        wb = get_workbook(filename)
+        ws = wb[sheet_name]
+        # Find the column indices for the given column names
+        header_row = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
+        col_indices = []
+        for col_name in column_names:
+            try:
+                col_idx = header_row.index(col_name) + 1  # 1-based index
+                col_indices.append(col_idx)
+            except ValueError:
+                wb.close()
+                return {
+                    "success": False,
+                    "data": "",
+                    "message": f"Column '{col_name}' not found in the worksheet."
+                }
+        # Collect rows where all specified column values match
+        matching_rows = []
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if all(row[col_idx - 1] == filter_values[i] for i, col_idx in enumerate(col_indices)):
+                matching_rows.append(row)
+        wb.close()
+        if not matching_rows:
+            return {
+                "success": True,
+                "data": "No matching rows found.",
+                "message": "No matching rows found."
+            }
+        # Convert matching rows to a formatted string
+        data_str = "\n".join([str(row) for row in matching_rows])
+        return {
+            "success": True,
+            "data": data_str,
+            "message": f"Found {len(matching_rows)} matching rows."
+        }
+    except Exception as e:
+        logger.error(f"Error filtering rows: {e}")
+        return {
+            "success": False,
+            "data": "",
+            "message": str(e)
+        }

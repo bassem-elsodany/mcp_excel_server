@@ -14,7 +14,9 @@ from mcp_excel_server.api.tools.worksheet import (
     get_worksheet,
     list_worksheets,
     merge_cells,
-    unmerge_cells
+    unmerge_cells,
+    filter_rows_by_column,
+    filter_rows_by_columns
 )
 
 # Workbook management tools
@@ -47,6 +49,8 @@ __all__ = [
     'list_worksheets',
     'merge_cells',
     'unmerge_cells',
+    'filter_rows_by_column',
+    'filter_rows_by_columns',
     
     # Workbook tools
     'create_workbook',

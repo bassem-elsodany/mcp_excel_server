@@ -96,6 +96,17 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `success`: True if the data was written successfully.
     - `message`: A message describing the result.
 
+- **[filter_rows_by_column](src/mcp_excel_server/api/tools/workbook.py)**: List all rows from a worksheet where a specified column matches a given value.
+  - **Args:**
+    - `filepath`: Name of the Excel file.
+    - `sheet_name`: Name of the worksheet to read from.
+    - `column_name`: The name of the column to filter on.
+    - `filter_value`: The value to match in the column.
+  - **Returns:**
+    - `success`: True if the operation succeeded.
+    - `data`: A formatted string of matching rows.
+    - `message`: A message describing the result.
+
 ### Worksheet Tools
 - **[create_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Add a new worksheet.
   - **Args:**
@@ -180,6 +191,28 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `end_cell`: Bottom-right cell of range to unmerge.
   - **Returns:**
     - `success`: True if the cells were unmerged successfully.
+    - `message`: A message describing the result.
+
+- **[filter_rows_by_column](src/mcp_excel_server/api/tools/worksheet.py)**: List all rows from a worksheet where a specified column matches a given value.
+  - **Args:**
+    - `filename`: Name of the Excel file.
+    - `sheet_name`: Name of the worksheet to read from.
+    - `column_name`: The name of the column to filter on.
+    - `filter_value`: The value to match in the column.
+  - **Returns:**
+    - `success`: True if the operation succeeded.
+    - `data`: A formatted string of matching rows.
+    - `message`: A message describing the result.
+
+- **[filter_rows_by_columns](src/mcp_excel_server/api/tools/worksheet.py)**: List all rows from a worksheet where specified columns match given values.
+  - **Args:**
+    - `filename`: Name of the Excel file.
+    - `sheet_name`: Name of the worksheet to read from.
+    - `column_names`: List of column names to filter on.
+    - `filter_values`: List of values to match in the corresponding columns.
+  - **Returns:**
+    - `success`: True if the operation succeeded.
+    - `data`: A formatted string of matching rows.
     - `message`: A message describing the result.
 
 ### Range Tools
