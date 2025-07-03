@@ -62,23 +62,25 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
 - **[create_workbook](src/mcp_excel_server/api/tools/workbook.py)**: Create a new Excel workbook.
   - **Args:**
     - `filename`: Name of the Excel file to create.
-    - `sheet_name`: Name of the initial worksheet.
+    - `sheet_name`: Name of the initial worksheet. If not provided, defaults to "Sheet1".
   - **Returns:**
     - `success`: True if the workbook was created successfully.
     - `message`: A message describing the result.
     - `info`: Additional information about the created workbook.
 
 - **[list_workbooks](src/mcp_excel_server/api/tools/workbook.py)**: List all Excel files in the configured directory.
+  - **Args:**
+    - None
   - **Returns:**
     - `success`: True if the operation succeeded.
     - `files`: List of Excel filenames.
     - `message`: Error message if success is False.
 
-- **[read_workbook_data](src/mcp_excel_server/api/tools/workbook.py)**: Read data from a specific range in a workbook.
+- **[read_workbook_data](src/mcp_excel_server/api/tools/workbook.py)**: Read data from an Excel worksheet.
   - **Args:**
     - `filepath`: Name of the Excel file.
     - `sheet_name`: Name of the worksheet to read from.
-    - `start_cell`: Starting cell reference (e.g., "A1").
+    - `start_cell`: Starting cell reference (e.g., "A1"). If not provided, defaults to "A1".
     - `end_cell`: Ending cell reference (e.g., "B10"). If None, reads to the end of data.
     - `preview_only`: If True, returns only a preview of the data.
   - **Returns:**
@@ -86,7 +88,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `data`: Data from Excel worksheet as formatted string.
     - `message`: Additional message describing the result.
 
-- **[write_workbook_data](src/mcp_excel_server/api/tools/workbook.py)**: Write data to a specific range in a workbook.
+- **[write_workbook_data](src/mcp_excel_server/api/tools/workbook.py)**: Write data to an Excel worksheet.
   - **Args:**
     - `filepath`: Name of the Excel file.
     - `sheet_name`: Name of the worksheet to write to.
@@ -96,19 +98,16 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `success`: True if the data was written successfully.
     - `message`: A message describing the result.
 
-- **[filter_rows_by_column](src/mcp_excel_server/api/tools/workbook.py)**: List all rows from a worksheet where a specified column matches a given value.
+- **[get_workbook_info](src/mcp_excel_server/api/tools/workbook.py)**: Get information about an Excel workbook.
   - **Args:**
-    - `filepath`: Name of the Excel file.
-    - `sheet_name`: Name of the worksheet to read from.
-    - `column_name`: The name of the column to filter on.
-    - `filter_value`: The value to match in the column.
+    - `filename`: Name of the Excel file.
   - **Returns:**
-    - `success`: True if the operation succeeded.
-    - `data`: A formatted string of matching rows.
+    - `success`: True if the workbook was found.
     - `message`: A message describing the result.
+    - `info`: Additional information about the workbook.
 
 ### Worksheet Tools
-- **[create_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Add a new worksheet.
+- **[create_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Creates a new worksheet in the specified Excel workbook.
   - **Args:**
     - `filename`: The name of the Excel file.
     - `sheet_name`: The name for the new worksheet.
@@ -118,7 +117,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `message`: A message describing the result.
     - `sheet_name`: The name of the created sheet.
 
-- **[delete_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Remove a worksheet.
+- **[delete_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Deletes a worksheet from the specified Excel workbook.
   - **Args:**
     - `filename`: The name of the Excel file.
     - `sheet_name`: The name of the worksheet to delete.
@@ -126,7 +125,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `success`: True if the worksheet was deleted successfully.
     - `message`: A message describing the result.
 
-- **[rename_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Rename a worksheet.
+- **[rename_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Renames a worksheet in the specified Excel workbook.
   - **Args:**
     - `filename`: The name of the Excel file.
     - `old_name`: The current name of the worksheet.
@@ -136,7 +135,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `message`: A message describing the result.
     - `new_name`: The new name of the worksheet.
 
-- **[copy_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Duplicate a worksheet.
+- **[copy_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Creates a copy of a worksheet in the specified Excel workbook.
   - **Args:**
     - `filename`: The name of the Excel file.
     - `sheet_name`: The name of the worksheet to copy.
@@ -146,7 +145,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `message`: A message describing the result.
     - `new_name`: The name of the new worksheet.
 
-- **[move_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Change worksheet order.
+- **[move_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Moves a worksheet to a new position in the specified Excel workbook.
   - **Args:**
     - `filename`: The name of the Excel file.
     - `sheet_name`: The name of the worksheet to move.
@@ -156,7 +155,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `message`: A message describing the result.
     - `sheet_name`: The name of the moved worksheet.
 
-- **[get_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Get worksheet details.
+- **[get_worksheet](src/mcp_excel_server/api/tools/worksheet.py)**: Retrieves information about a worksheet in the specified Excel workbook.
   - **Args:**
     - `filename`: The name of the Excel file.
     - `sheet_name`: The name of the worksheet to retrieve information for.
@@ -165,7 +164,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `message`: A message describing the result.
     - `sheet`: Worksheet information (structure may vary).
 
-- **[list_worksheets](src/mcp_excel_server/api/tools/worksheet.py)**: List all worksheets in a workbook.
+- **[list_worksheets](src/mcp_excel_server/api/tools/worksheet.py)**: Lists all worksheets in the specified Excel workbook.
   - **Args:**
     - `filename`: The name of the Excel file.
   - **Returns:**
@@ -173,7 +172,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `message`: A message describing the result.
     - `sheets`: List of worksheet names.
 
-- **[merge_cells](src/mcp_excel_server/api/tools/worksheet.py)**: Merge a range of cells.
+- **[merge_cells](src/mcp_excel_server/api/tools/worksheet.py)**: Merge a range of cells in a worksheet.
   - **Args:**
     - `filename`: Name of the Excel file.
     - `sheet_name`: Name of the worksheet.
@@ -183,7 +182,7 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
     - `success`: True if the cells were merged successfully.
     - `message`: A message describing the result.
 
-- **[unmerge_cells](src/mcp_excel_server/api/tools/worksheet.py)**: Unmerge a range of cells.
+- **[unmerge_cells](src/mcp_excel_server/api/tools/worksheet.py)**: Unmerge a range of cells in a worksheet.
   - **Args:**
     - `filename`: Name of the Excel file.
     - `sheet_name`: Name of the worksheet.
@@ -196,9 +195,9 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
 - **[filter_rows_by_column](src/mcp_excel_server/api/tools/worksheet.py)**: List all rows from a worksheet where a specified column matches a given value.
   - **Args:**
     - `filename`: Name of the Excel file.
-    - `sheet_name`: Name of the worksheet to read from.
     - `column_name`: The name of the column to filter on.
     - `filter_value`: The value to match in the column.
+    - `sheet_name`: Name of the worksheet to read from. If not provided, defaults to the first sheet.
   - **Returns:**
     - `success`: True if the operation succeeded.
     - `data`: A formatted string of matching rows.
@@ -207,9 +206,9 @@ The **MCP Client** is a protocol client that maintains a 1:1 connection with an 
 - **[filter_rows_by_columns](src/mcp_excel_server/api/tools/worksheet.py)**: List all rows from a worksheet where specified columns match given values.
   - **Args:**
     - `filename`: Name of the Excel file.
-    - `sheet_name`: Name of the worksheet to read from.
     - `column_names`: List of column names to filter on.
     - `filter_values`: List of values to match in the corresponding columns.
+    - `sheet_name`: Name of the worksheet to read from. If not provided, defaults to the first sheet.
   - **Returns:**
     - `success`: True if the operation succeeded.
     - `data`: A formatted string of matching rows.

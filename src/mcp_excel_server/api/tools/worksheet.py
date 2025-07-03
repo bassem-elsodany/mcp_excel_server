@@ -511,17 +511,17 @@ def unmerge_cells(
 @register_tool
 def filter_rows_by_column(
     filename: str,
-    sheet_name: str,
     column_name: str,
-    filter_value: str
+    filter_value: str,
+    sheet_name: Optional[str] = None
 ) -> Dict[str, Any]:
     """List all rows from a worksheet where a specified column matches a given value.
 
     Args:
         filename: Name of the Excel file.
-        sheet_name: Name of the worksheet to read from.
         column_name: The name of the column to filter on.
         filter_value: The value to match in the column.
+        sheet_name: Name of the worksheet to read from. If not provided, defaults to the first sheet.
 
     Returns:
         Dict containing:
@@ -532,6 +532,8 @@ def filter_rows_by_column(
     logger.debug(f"filter_rows_by_column called with filename={filename}, sheet_name={sheet_name}, column_name={column_name}, filter_value={filter_value}")
     try:
         wb = get_workbook(filename)
+        if sheet_name is None:
+            sheet_name = wb.sheetnames[0]  # Default to the first sheet
         ws = wb[sheet_name]
         # Find the column index for the given column name
         header_row = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
@@ -544,7 +546,7 @@ def filter_rows_by_column(
                 "data": "",
                 "message": f"Column '{column_name}' not found in the worksheet."
             }
-        # Collect rows where the column value matches filter_value
+        # Collect rows where the specified column value matches
         matching_rows = []
         for row in ws.iter_rows(min_row=2, values_only=True):
             if row[col_idx - 1] == filter_value:
@@ -574,17 +576,17 @@ def filter_rows_by_column(
 @register_tool
 def filter_rows_by_columns(
     filename: str,
-    sheet_name: str,
     column_names: List[str],
-    filter_values: List[str]
+    filter_values: List[str],
+    sheet_name: Optional[str] = None
 ) -> Dict[str, Any]:
     """List all rows from a worksheet where specified columns match given values.
 
     Args:
         filename: Name of the Excel file.
-        sheet_name: Name of the worksheet to read from.
         column_names: List of column names to filter on.
         filter_values: List of values to match in the corresponding columns.
+        sheet_name: Name of the worksheet to read from. If not provided, defaults to the first sheet.
 
     Returns:
         Dict containing:
@@ -595,6 +597,8 @@ def filter_rows_by_columns(
     logger.debug(f"filter_rows_by_columns called with filename={filename}, sheet_name={sheet_name}, column_names={column_names}, filter_values={filter_values}")
     try:
         wb = get_workbook(filename)
+        if sheet_name is None:
+            sheet_name = wb.sheetnames[0]  # Default to the first sheet
         ws = wb[sheet_name]
         # Find the column indices for the given column names
         header_row = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
